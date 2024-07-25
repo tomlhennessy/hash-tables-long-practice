@@ -6,8 +6,7 @@ class KeyValuePair {
   }
 }
 
-class HashTable { // get O(1), set O(1), deleteKey O(1)
-
+class HashTable {
   constructor(numBuckets = 8) {
     this.capacity = numBuckets;
     this.data = new Array(this.capacity).fill(null);
@@ -16,48 +15,44 @@ class HashTable { // get O(1), set O(1), deleteKey O(1)
 
   hash(key) {
     let hashValue = 0;
-
     for (let i = 0; i < key.length; i++) {
       hashValue += key.charCodeAt(i);
     }
-
     return hashValue;
   }
 
   hashMod(key) {
-    // Get index after hashing
     return this.hash(key) % this.capacity;
   }
-
 
   insert(key, value) {
     const index = this.hashMod(key);
     let current = this.data[index];
 
-    while (current) {
-      if (current.key === key) {
-        current.value = value; // update the value if the key exists
-        return;
-      }
-      if (!current.next) break;
-      current = current.next;
-    }
+    console.log(`Inserting key: ${key}, value: ${value} at index: ${index}`);
 
-    const newPair = new KeyValuePair(key, value);
-    if (current) {
-      current.next = newPair; // handle collision
+    if (!current) {
+      this.data[index] = new KeyValuePair(key, value);
     } else {
-      this.data[index] = newPair; // insert at the index
+      let prev = null;
+      while (current) {
+        if (current.key === key) {
+          current.value = value;
+          console.log(`Updated key: ${key} with new value: ${value}`);
+          return;
+        }
+        prev = current;
+        current = current.next;
+      }
+      prev.next = new KeyValuePair(key, value);
     }
 
     this.count++;
 
-    // check load factor to determine if resize is needed
     if (this.count / this.capacity > 0.7) {
       this.resize();
     }
   }
-
 
   read(key) {
     const index = this.hashMod(key);
@@ -73,14 +68,15 @@ class HashTable { // get O(1), set O(1), deleteKey O(1)
     return undefined;
   }
 
-
   resize() {
     const oldData = this.data;
     this.capacity *= 2;
     this.data = new Array(this.capacity).fill(null);
-    this.count = 0; // reset count and reinsert all items
+    this.count = 0;
 
-    for (let i = 0; i < old.Data.length; i++) {
+    console.log(`Resizing table to new capacity: ${this.capacity}`);
+
+    for (let i = 0; i < oldData.length; i++) {
       let current = oldData[i];
       while (current) {
         this.insert(current.key, current.value);
@@ -88,7 +84,6 @@ class HashTable { // get O(1), set O(1), deleteKey O(1)
       }
     }
   }
-
 
   delete(key) {
     const index = this.hashMod(key);
@@ -98,9 +93,9 @@ class HashTable { // get O(1), set O(1), deleteKey O(1)
     while (current) {
       if (current.key === key) {
         if (prev) {
-          prev.next = current.next; // remove the node in the middle
+          prev.next = current.next;
         } else {
-          this.data[index] = current.next; // remove the head node
+          this.data[index] = current.next;
         }
         this.count--;
         return;
@@ -112,6 +107,5 @@ class HashTable { // get O(1), set O(1), deleteKey O(1)
     return "Key not found";
   }
 }
-
 
 module.exports = HashTable;
